@@ -10,7 +10,8 @@
 # don't need unrar anymore.
 
 # You can try to use this script with unrar-free, but since unrar-free
-# can't read all rar archives (fuck closed formats), I can't
+# can't read all rar archives (fuck closed formats), I can't guarantee
+# that it will work.
 
 rarfile=$( readlink -f $* )
 
