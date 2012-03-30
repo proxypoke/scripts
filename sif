@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# Copywrong (C) 2012 slowpoke (Proxy) <proxypoke at lavabit dot com>
+# This script is licensed under the WTFPL v2.
+
+# sif - Spaces In Filenames
+# Converts spaces in filenames to underscores.
+
+
+file=$*
+base=$( basename "$file" )
+path=$( dirname "$file" )
+
+newbase=$( echo $base | sed "s/ /_/g" )
+newfile=$path/$newbase
+
+if [ "$file" = "$newfile" ]
+then
+	echo "No spaces in $file..."
+	exit 0 # nothing to do
+else
+	echo "Purging spaces from $file..."
+	mv "$file" "$newfile"
+fi
