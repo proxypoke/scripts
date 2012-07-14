@@ -26,18 +26,21 @@ POS_TV="--left-of ${PRIMARY}"
 function mode-tv {
 	xrandr --output ${SECONDARY} --off
 	xrandr --output ${TV} --auto ${POS_TV}
+	nitrogen --restore
 }
 
 # This deactivates the TV output and turns on the secondary output.
 function mode-dualhead {
 	xrandr --output $TV --off
 	xrandr --output ${SECONDARY} --auto ${POS_SEC}
+	nitrogen --restore
 }
 
 # This deactivates both the secondary and TV output.
 function mode-singlehead {
 	xrandr --output ${SECONDARY} --off
 	xrandr --output ${TV} --off
+	nitrogen --restore
 }
 
 # =============================== [ INVOCATION ] ===============================
