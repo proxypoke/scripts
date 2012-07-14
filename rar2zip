@@ -13,7 +13,7 @@
 # can't read all rar archives (fuck closed formats), I can't guarantee
 # that it will work.
 
-rarfile=$( readlink -f $* )
+rarfile=$( readlink -f "$*" )
 
 case $rarfile in
 	*.rar )
