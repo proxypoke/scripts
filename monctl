@@ -1,0 +1,73 @@
+#!/bin/bash
+# monctl - easily control monitors with xrandr
+
+# ============================= [ OUTPUT NAMES ] ===============================
+# defines the output names for xrandr
+
+# The primary output
+PRIMARY="DVI-I-1"
+# The secondary output
+SECONDARY="DVI-I-2"
+# The TV output
+TV="HDMI-1"
+
+# =============================== [ POSITIONS ] ================================
+# defines where the outputs will be located, relative to the primary output.
+
+# position for the secondary screen
+POS_SEC="--right-of ${PRIMARY}"
+# position for the TV
+POS_TV="--left-of ${PRIMARY}"
+
+# ================================= [ MODES ]===================================
+# These functions represent the different modes.
+
+# This deactivates the secondary screen and activates TV output.
+function mode-tv {
+	xrandr --output ${SECONDARY} --off
+	xrandr --output ${TV} --auto ${POS_TV}
+}
+
+# This deactivates the TV output and turns on the secondary output.
+function mode-dualhead {
+	xrandr --output $TV --off
+	xrandr --output ${SECONDARY} --auto ${POS_SEC}
+}
+
+# This deactivates both the secondary and TV output.
+function mode-singlehead {
+	xrandr --output ${SECONDARY} --off
+	xrandr --output ${TV} --off
+}
+
+# =============================== [ INVOCATION ] ===============================
+
+case $1 in
+	[Tt][Vv])
+		echo -n "Switching to TV mode..."
+		mode-tv
+		echo "done"
+		exit 0
+		;;
+	[Dd][Uu][Aa][Ll])
+		echo -n "Switching to dualhead mode..."
+		mode-dualhead
+		echo "done"
+		exit 0
+		;;
+	[Ss][Ii][Nn][Gg][Ll][Ee])
+		echo -n "Switching to singlehead mode..."
+		mode-singlehead
+		echo "done"
+		exit 0
+		;;
+	*)
+		echo "Unknown mode: ${1}"
+		echo "Specify one of:"
+		echo -e "\tsingle"
+		echo -e "\tdual"
+		echo -e "\ttv"
+		exit 1
+		;;
+esac
+
