@@ -1,101 +1,115 @@
 #!/bin/bash
 # monctl - easily control monitors with xrandr
 
-# ============================= [ OUTPUT NAMES ] ===============================
-# defines the output names for xrandr
+# ================================= [ CONFIG ] =================================
 
-declare -A OUTPUTS
-OUTPUTS=(\
-	["primary"]="DVI-I-1" \
-	["secondary"]="DVI-I-2" \
-	["tv"]="HDMI-1" \
-	["beamer"]="VGA1" \
-	)
+# Get a config, if any.
+if [ -f "$HOME/.monctlrc" ]; then
+    source "$HOME/.monctlrc"
+    if [ ! -v OUTPUTS ]; then
+        echo "Config is missing OUTPUTS array."
+        exit 3
+    fi
+    if [ ! -v POSITIONS ]; then
+        echo "Config is missing POSITIONS array."
+        exit 3
+    fi
+else
+# Fallback
+    echo "No config found, using defaults."
+    declare -A OUTPUTS
+    OUTPUTS=(\
+        ["primary"]="DVI-I-1" \
+        ["secondary"]="DVI-I-2" \
+        ["tv"]="HDMI-1" \
+        ["beamer"]="VGA1" \
+        )
+    declare -A POSITIONS
+    POSITIONS=(\
+        ["secondary"]="--right-of" \
+        ["tv"]="--left-of" \
+        ["beamer"]="--right-of" \
+        )
+fi
 
 # for convenience
 PRIMARY=${OUTPUTS["primary"]}
-
-# =============================== [ POSITIONS ] ================================
-# defines where the outputs will be located, relative to the primary output.
-
-declare -A POSITIONS
-POSITIONS=(\
-	["secondary"]="--right-of $PRIMARY" \
-	["tv"]="--left-of $PRIMARY" \
-	["beamer"]="--right-of $PRIMARY" \
-	)
 
 # ================================= [ MODES ]===================================
 # These functions represent the different modes.
 
 # This deactivates all outputs except the primary one.
 function mode-singlehead {
-	for out in ${!OUTPUTS[@]}; do
-		if [ "${out}" != "primary" ]; then
-			xrandr --output ${OUTPUTS[$out]} --off >/dev/null 2>&1
-		fi
-	done
-	wallpaper
+    for out in ${!OUTPUTS[@]}; do
+        if [ "${out}" != "primary" ]; then
+            xrandr --output ${OUTPUTS[$out]} --off >/dev/null 2>&1
+        fi
+    done
+    wallpaper
 }
 
 # Turns on the secondary output, deactivating other non-primary outputs.
 function mode-dualhead {
-	mode-singlehead
-	xrandr --output ${OUTPUTS["secondary"]} --auto ${POSITIONS["secondary"]}
-	wallpaper
+    mode-singlehead
+
+    xrandr --output ${OUTPUTS["secondary"]} --auto \
+    ${POSITIONS["secondary"]} ${PRIMARY}
+    wallpaper
 }
 
 # Turns on the TV output, deactivating other non-primary outputs.
 function mode-tv {
-	mode-singlehead
-	xrandr --output ${OUTPUTS["tv"]} --auto ${POSITIONS["tv"]}
-	wallpaper
+    mode-singlehead
+    xrandr --output ${OUTPUTS["tv"]} --auto \
+        ${POSITIONS["tv"]} ${PRIMARY}
+    wallpaper
 }
 
 # Turns on the beamer output, deactivating other non-primary outputs.
 function mode-beamer {
-	mode-singlehead
-	xrandr --output ${OUTPUTS["beamer"]} --auto ${POSITIONS["beamer"]}
-	wallpaper
+    mode-singlehead
+    xrandr --output ${OUTPUTS["beamer"]} --auto \
+       ${POSITIONS["beamer"]} ${PRIMARY}
+    wallpaper
 }
 
 # ============================== [ HELPER FUNCS ] ==============================
 
 # Restore the wallpaper
 function wallpaper {
-	nitrogen --restore >/dev/null 2>&1
+    nitrogen --restore >/dev/null 2>&1
 }
 
 # =============================== [ INVOCATION ] ===============================
 
 case $1 in
-	[Ss][Ii][Nn][Gg][Ll][Ee])
-		echo "Switching to singlehead mode..."
-		mode-singlehead
-		exit 0
-		;;
-	[Dd][Uu][Aa][Ll])
-		echo "Switching to dualhead mode..."
-		mode-dualhead
-		exit 0
-		;;
-	[Tt][Vv])
-		echo "Switching to TV mode..."
-		mode-tv
-		exit 0
-		;;
-	[Bb][Ee][Aa][Mm][Ee][Rr])
-		echo "Switching to beamer mode..."
-		mode-beamer
-		exit 0
-		;;
-	*)
-		echo "Unknown mode: '${1}'"
-		echo "Specify one of:"
-		echo -e "\tsingle"
-		echo -e "\tdual"
-		echo -e "\ttv"
-		echo -e "\tbeamer"
-		exit 1
-		;;
+    [Ss][Ii][Nn][Gg][Ll][Ee])
+        echo "Switching to singlehead mode..."
+        mode-singlehead
+        exit 0
+        ;;
+    [Dd][Uu][Aa][Ll])
+        echo "Switching to dualhead mode..."
+        mode-dualhead
+        exit 0
+        ;;
+    [Tt][Vv])
+        echo "Switching to TV mode..."
+        mode-tv
+        exit 0
+        ;;
+    [Bb][Ee][Aa][Mm][Ee][Rr])
+        echo "Switching to beamer mode..."
+        mode-beamer
+        exit 0
+        ;;
+    *)
+        echo "Unknown mode: '${1}'"
+        echo "Specify one of:"
+        echo -e "\tsingle"
+        echo -e "\tdual"
+        echo -e "\ttv"
+        echo -e "\tbeamer"
+        exit 1
+        ;;
 esac
