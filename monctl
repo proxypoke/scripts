@@ -4,64 +4,79 @@
 # ============================= [ OUTPUT NAMES ] ===============================
 # defines the output names for xrandr
 
-# The primary output
-PRIMARY="DVI-I-1"
-# The secondary output
-SECONDARY="DVI-I-2"
-# The TV output
-TV="HDMI-1"
+declare -A OUTPUTS
+OUTPUTS=(\
+	# The primary output
+	["primary"]="DVI-I-1" \
+	## The secondary output
+	["secondary"]="DVI-I-2" \
+	# The TV output
+	["tv"]="HDMI-1" \
+	)
+
+# for convenience
+PRIMARY=${OUTPUTS["primary"]}
 
 # =============================== [ POSITIONS ] ================================
 # defines where the outputs will be located, relative to the primary output.
 
-# position for the secondary screen
-POS_SEC="--right-of ${PRIMARY}"
-# position for the TV
-POS_TV="--left-of ${PRIMARY}"
+declare -A POSITIONS
+POSITIONS=(\
+	["secondary"]="--right-of $PRIMARY" \
+	["tv"]="--left-of $PRIMARY" \
+	["beamer"]="--right-of $PRIMARY" \
+	)
 
 # ================================= [ MODES ]===================================
 # These functions represent the different modes.
 
-# This deactivates the secondary screen and activates TV output.
-function mode-tv {
-	xrandr --output ${SECONDARY} --off
-	xrandr --output ${TV} --auto ${POS_TV}
-	nitrogen --restore
-}
-
-# This deactivates the TV output and turns on the secondary output.
-function mode-dualhead {
-	xrandr --output $TV --off
-	xrandr --output ${SECONDARY} --auto ${POS_SEC}
-	nitrogen --restore
-}
-
-# This deactivates both the secondary and TV output.
+# This deactivates all outputs except the primary one.
 function mode-singlehead {
-	xrandr --output ${SECONDARY} --off
-	xrandr --output ${TV} --off
-	nitrogen --restore
+	for out in ${!OUTPUTS[@]}; do
+		if [ "${out}" != "primary" ]; then
+			xrandr --output ${OUTPUTS[$out]} --off >/dev/null 2>&1
+		fi
+	done
+	wallpaper
+}
+
+# Turns on the secondary output, deactivating other non-primary outputs.
+function mode-dualhead {
+	mode-singlehead
+	xrandr --output ${OUTPUTS["secondary"]} --auto ${POSITIONS["secondary"]}
+	wallpaper
+}
+
+# Turns on the TV output, deactivating other non-primary outputs.
+function mode-tv {
+	mode-singlehead
+	xrandr --output ${OUTPUTS["tv"]} --auto ${POSITIONS["tv"]}
+	wallpaper
+}
+
+# ============================== [ HELPER FUNCS ] ==============================
+
+# Restore the wallpaper
+function wallpaper {
+	nitrogen --restore >/dev/null 2>&1
 }
 
 # =============================== [ INVOCATION ] ===============================
 
 case $1 in
-	[Tt][Vv])
-		echo -n "Switching to TV mode..."
-		mode-tv
-		echo "done"
+	[Ss][Ii][Nn][Gg][Ll][Ee])
+		echo "Switching to singlehead mode..."
+		mode-singlehead
 		exit 0
 		;;
 	[Dd][Uu][Aa][Ll])
-		echo -n "Switching to dualhead mode..."
+		echo "Switching to dualhead mode..."
 		mode-dualhead
-		echo "done"
 		exit 0
 		;;
-	[Ss][Ii][Nn][Gg][Ll][Ee])
-		echo -n "Switching to singlehead mode..."
-		mode-singlehead
-		echo "done"
+	[Tt][Vv])
+		echo "Switching to TV mode..."
+		mode-tv
 		exit 0
 		;;
 	*)
@@ -73,4 +88,3 @@ case $1 in
 		exit 1
 		;;
 esac
-
