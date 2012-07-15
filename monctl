@@ -6,12 +6,10 @@
 
 declare -A OUTPUTS
 OUTPUTS=(\
-	# The primary output
 	["primary"]="DVI-I-1" \
-	## The secondary output
 	["secondary"]="DVI-I-2" \
-	# The TV output
 	["tv"]="HDMI-1" \
+	["beamer"]="VGA1" \
 	)
 
 # for convenience
@@ -54,6 +52,13 @@ function mode-tv {
 	wallpaper
 }
 
+# Turns on the beamer output, deactivating other non-primary outputs.
+function mode-beamer {
+	mode-singlehead
+	xrandr --output ${OUTPUTS["beamer"]} --auto ${POSITIONS["beamer"]}
+	wallpaper
+}
+
 # ============================== [ HELPER FUNCS ] ==============================
 
 # Restore the wallpaper
@@ -79,12 +84,18 @@ case $1 in
 		mode-tv
 		exit 0
 		;;
+	[Bb][Ee][Aa][Mm][Ee][Rr])
+		echo "Switching to beamer mode..."
+		mode-beamer
+		exit 0
+		;;
 	*)
-		echo "Unknown mode: ${1}"
+		echo "Unknown mode: '${1}'"
 		echo "Specify one of:"
 		echo -e "\tsingle"
 		echo -e "\tdual"
 		echo -e "\ttv"
+		echo -e "\tbeamer"
 		exit 1
 		;;
 esac
